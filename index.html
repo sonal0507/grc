@@ -47680,7 +47680,12 @@ window.PCIAdapter = {
             const framework = window.assessmentData.frameworks.find(f => f.code === frameworkCode);
             alert('DEBUG: Framework found: ' + (framework ? framework.name : 'NOT FOUND'));
             
-            if (!framework) return;
+            if (!framework) {
+                alert('ERROR: Framework not found in assessment data');
+                return;
+            }
+            
+            alert('DEBUG: About to get responses and items...');
             
             currentFrameworkForJIRA = frameworkCode;
             
@@ -47689,7 +47694,11 @@ window.PCIAdapter = {
                 responses = getSavedProgress(frameworkCode);
             }
             
+            alert('DEBUG: Responses loaded: ' + Object.keys(responses || {}).length + ' responses');
+            
             const items = window.assessmentHelpers.getItemsByFramework(frameworkCode);
+            alert('DEBUG: Items found: ' + items.length);
+            
             currentGapsForJIRA = [];
             
             // Identify gaps (items with 'no' or 'partial' response)
@@ -47708,14 +47717,20 @@ window.PCIAdapter = {
                 }
             });
             
+            alert('DEBUG: Gaps identified: ' + currentGapsForJIRA.length + ' gaps found');
+            
             if (currentGapsForJIRA.length === 0) {
-                alert('No compliance gaps found. All answered questions are compliant.');
+                alert('No compliance gaps found. All answered questions are compliant.\n\nTip: Answer some questions as "No" or "Partially" to create tickets for gaps.');
                 return;
             }
+            
+            alert('DEBUG: About to update modal content...');
             
             // Update modal content
             document.getElementById('jiraGapCount').textContent = currentGapsForJIRA.length;
             document.getElementById('jiraSelectedCount').textContent = currentGapsForJIRA.length;
+            
+            alert('DEBUG: Modal content updated, building gaps list...');
             
             // Build gaps list
             const gapsList = document.getElementById('jiraGapsList');
@@ -47754,9 +47769,21 @@ window.PCIAdapter = {
             
             gapsList.innerHTML = html;
             
+            alert('DEBUG: Gaps list built. About to show modal...');
+            
             // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('jiraTicketModal'));
-            modal.show();
+            try {
+                const modalElement = document.getElementById('jiraTicketModal');
+                if (!modalElement) {
+                    alert('ERROR: Modal element not found!');
+                    return;
+                }
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+                alert('DEBUG: Modal should be visible now!');
+            } catch (error) {
+                alert('ERROR showing modal: ' + error.message);
+            }
         }
         
         // Toggle all JIRA gap checkboxes
