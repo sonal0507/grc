@@ -47665,13 +47665,21 @@ window.PCIAdapter = {
         
         // Create JIRA tickets for gaps from results view
         function createJIRATicketsForGaps() {
+            alert('DEBUG: Button clicked! Starting...');
+            
             const frameworkCode = currentFrameworkCode;
+            alert('DEBUG: frameworkCode = ' + frameworkCode);
+            
             if (!frameworkCode) {
-                alert('Please complete an assessment first.');
+                alert('ERROR: No assessment found. Please complete an assessment first.');
                 return;
             }
             
+            alert('DEBUG: Framework code found: ' + frameworkCode);
+            
             const framework = window.assessmentData.frameworks.find(f => f.code === frameworkCode);
+            alert('DEBUG: Framework found: ' + (framework ? framework.name : 'NOT FOUND'));
+            
             if (!framework) return;
             
             currentFrameworkForJIRA = frameworkCode;
