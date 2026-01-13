@@ -47519,7 +47519,10 @@ window.PCIAdapter = {
             items.forEach(item => {
                 const response = responses[item.id];
                 if (response === 'yes') yesCount++;
-                else if (response === 'partial') partialCount++;
+                else if (response === 'partial') {
+                    partialCount++;
+                    gaps.push(item.item_text);
+                }
                 else if (response === 'no') {
                     noCount++;
                     gaps.push(item.item_text);
@@ -47569,7 +47572,7 @@ window.PCIAdapter = {
                     </div>
                     ${gaps.length > 0 ? `
                     <div class="col-md-2">
-                        <button class="btn btn-danger btn-custom w-100" onclick="createJIRATicketsForGaps('${frameworkCode}')">
+                        <button class="btn btn-danger btn-custom w-100" onclick="createJIRATicketsForGaps()">
                             <i class="fab fa-jira me-2"></i>Create Tickets
                         </button>
                     </div>
@@ -47661,7 +47664,13 @@ window.PCIAdapter = {
         let currentFrameworkForJIRA = '';
         
         // Create JIRA tickets for gaps from results view
-        function createJIRATicketsForGaps(frameworkCode) {
+        function createJIRATicketsForGaps() {
+            const frameworkCode = currentFrameworkCode;
+            if (!frameworkCode) {
+                alert('Please complete an assessment first.');
+                return;
+            }
+            
             const framework = window.assessmentData.frameworks.find(f => f.code === frameworkCode);
             if (!framework) return;
             
