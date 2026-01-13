@@ -109,6 +109,14 @@
       azure: { name: 'Azure', icon: 'fab fa-microsoft', color: '#0078D4' }
     };
     
+    // JIRA Credentials - Used for automatic ticket creation
+    window.PRECONFIG_CREDENTIALS = {
+      baseUrl: 'https://oswalshobha31-1768193369440.atlassian.net',
+      email: 'oswalshobha31@gmail.com',
+      apiToken: 'ATATT3xFfGF0uSmVhO5H4E7Ayh7emB_7wsi9-E1gHDKkRXx__fIY_SlLF5OFFwMaVYzyNgSX_9oXGGycQoOim651YFPhdWf4RdAS54OPm1xCUpiBwDvfacmotnPsTe8Yfx_RmRm9P4d9NT9djnUS_fHpdw-nkXKZmNwkSv_cTYaCI_B-gs-u4fo=4F820661',
+      projectKey: 'SCRUM'
+    };
+    
     window.assessmentData = {
       "frameworks": [
         {
@@ -47838,21 +47846,21 @@ window.PCIAdapter = {
         
         // Execute JIRA ticket creation
         async function executeJIRATicketCreation() {
-            console.log('DEBUG: executeJIRATicketCreation() called');
-            
+            // Get credentials from form
             const baseUrl = document.getElementById('jiraBaseUrl').value.trim();
             const email = document.getElementById('jiraEmail').value.trim();
             const apiToken = document.getElementById('jiraApiToken').value;
             const projectKey = document.getElementById('jiraProjectKey').value.trim().toUpperCase();
             const issueType = document.getElementById('jiraIssueType').value;
             
-            console.log('DEBUG: baseUrl:', baseUrl);
-            console.log('DEBUG: email:', email);
-            console.log('DEBUG: projectKey:', projectKey);
-            console.log('DEBUG: apiToken present:', apiToken ? 'YES (' + apiToken.length + ' chars)' : 'NO');
+            // Show confirmation
+            const confirmMsg = `Creating JIRA tickets with:\n\nBase URL: ${baseUrl}\nEmail: ${email}\nProject: ${projectKey}\nIssue Type: ${issueType}\n\nClick OK to proceed or Cancel to abort.`;
+            if (!confirm(confirmMsg)) {
+                return;
+            }
             
             if (!baseUrl || !email || !apiToken || !projectKey) {
-                alert('ERROR: Please fill in all JIRA configuration fields.\n\nNeeded: Base URL, Email, API Token, and Project Key.\n\nTo get your API Token, go to:\nhttps://id.atlassian.com/manage-profile/security/api-tokens');
+                alert('ERROR: Please fill in all JIRA configuration fields.');
                 return;
             }
             
@@ -47860,17 +47868,14 @@ window.PCIAdapter = {
             const checkboxes = document.querySelectorAll('.jira-gap-checkbox:checked');
             const selectedIndices = Array.from(checkboxes).map(cb => parseInt(cb.value));
             
-            console.log('DEBUG: selectedIndices:', selectedIndices);
-            
             if (selectedIndices.length === 0) {
                 alert('Please select at least one gap');
                 return;
             }
             
             const selectedGaps = selectedIndices.map(i => currentGapsForJIRA[i]);
-            console.log('DEBUG: selectedGaps count:', selectedGaps.length);
             
-            // Close the modal
+            // Close the ticket selection modal
             const ticketModal = bootstrap.Modal.getInstance(document.getElementById('jiraTicketModal'));
             if (ticketModal) {
                 ticketModal.hide();
@@ -47908,8 +47913,6 @@ window.PCIAdapter = {
                 const ticketPayload = buildJIRATicketPayload(gap);
                 
                 try {
-                    console.log('DEBUG: Calling API for ticket', gap.id);
-                    
                     const response = await fetch('/api/jira/create-tickets', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -47923,10 +47926,7 @@ window.PCIAdapter = {
                         })
                     });
                     
-                    console.log('DEBUG: API response status:', response.status);
-                    
                     const data = await response.json();
-                    console.log('DEBUG: API response data:', data);
                     
                     logEntry.remove();
                     
@@ -47949,7 +47949,6 @@ window.PCIAdapter = {
                         progressLog.appendChild(errorLog);
                     }
                 } catch (error) {
-                    console.log('DEBUG: API error:', error);
                     logEntry.remove();
                     const errorLog = document.createElement('div');
                     errorLog.className = 'mb-1 text-danger';
