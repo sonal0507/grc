@@ -47576,6 +47576,9 @@ window.PCIAdapter = {
                             <i class="fab fa-jira me-2"></i>Create Tickets
                         </button>
                     </div>
+                    <div class="col-md-4">
+                        <div id="jiraStatusMessage" class="text-start mt-2" style="font-size: 0.85rem;"></div>
+                    </div>
                     ` : ''}
                     <div class="col-md-${gaps.length > 0 ? '4' : '6'}">
                         <button class="btn btn-outline-secondary btn-custom w-100" onclick="startNewInlineAssessment('${frameworkCode}')">
@@ -47665,27 +47668,23 @@ window.PCIAdapter = {
         
         // Create JIRA tickets for gaps from results view
         function createJIRATicketsForGaps() {
-            alert('DEBUG: Button clicked! Starting...');
+            // Update status message
+            const statusDiv = document.getElementById('jiraStatusMessage');
+            if (statusDiv) statusDiv.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Starting ticket creation...</span>';
             
             const frameworkCode = currentFrameworkCode;
-            alert('DEBUG: frameworkCode = ' + frameworkCode);
             
             if (!frameworkCode) {
-                alert('ERROR: No assessment found. Please complete an assessment first.');
+                if (statusDiv) statusDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> ERROR: No assessment found. Please complete an assessment first.</span>';
                 return;
             }
-            
-            alert('DEBUG: Framework code found: ' + frameworkCode);
             
             const framework = window.assessmentData.frameworks.find(f => f.code === frameworkCode);
-            alert('DEBUG: Framework found: ' + (framework ? framework.name : 'NOT FOUND'));
             
             if (!framework) {
-                alert('ERROR: Framework not found in assessment data');
+                if (statusDiv) statusDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> ERROR: Framework not found in assessment data</span>';
                 return;
             }
-            
-            alert('DEBUG: About to get responses and items...');
             
             currentFrameworkForJIRA = frameworkCode;
             
@@ -47694,10 +47693,9 @@ window.PCIAdapter = {
                 responses = getSavedProgress(frameworkCode);
             }
             
-            alert('DEBUG: Responses loaded: ' + Object.keys(responses || {}).length + ' responses');
+            if (statusDiv) statusDiv.innerHTML = `<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Loaded ${Object.keys(responses || {}).length} responses for ${framework.name}</span>`;
             
             const items = window.assessmentHelpers.getItemsByFramework(frameworkCode);
-            alert('DEBUG: Items found: ' + items.length);
             
             currentGapsForJIRA = [];
             
@@ -47717,20 +47715,16 @@ window.PCIAdapter = {
                 }
             });
             
-            alert('DEBUG: Gaps identified: ' + currentGapsForJIRA.length + ' gaps found');
-            
             if (currentGapsForJIRA.length === 0) {
-                alert('No compliance gaps found. All answered questions are compliant.\n\nTip: Answer some questions as "No" or "Partially" to create tickets for gaps.');
+                if (statusDiv) statusDiv.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> No gaps found! Answer some questions as "No" or "Partially" to create tickets.</span>';
                 return;
             }
             
-            alert('DEBUG: About to update modal content...');
+            if (statusDiv) statusDiv.innerHTML = `<span class="text-success"><i class="fas fa-check"></i> Found ${currentGapsForJIRA.length} gaps. Opening ticket creation modal...</span>`;
             
             // Update modal content
             document.getElementById('jiraGapCount').textContent = currentGapsForJIRA.length;
             document.getElementById('jiraSelectedCount').textContent = currentGapsForJIRA.length;
-            
-            alert('DEBUG: Modal content updated, building gaps list...');
             
             // Build gaps list
             const gapsList = document.getElementById('jiraGapsList');
@@ -47769,20 +47763,14 @@ window.PCIAdapter = {
             
             gapsList.innerHTML = html;
             
-            alert('DEBUG: Gaps list built. About to show modal...');
-            
             // Show modal
-            try {
-                const modalElement = document.getElementById('jiraTicketModal');
-                if (!modalElement) {
-                    alert('ERROR: Modal element not found!');
-                    return;
-                }
+            const modalElement = document.getElementById('jiraTicketModal');
+            if (modalElement) {
                 const modal = new bootstrap.Modal(modalElement);
                 modal.show();
-                alert('DEBUG: Modal should be visible now!');
-            } catch (error) {
-                alert('ERROR showing modal: ' + error.message);
+                if (statusDiv) statusDiv.innerHTML = `<span class="text-success"><i class="fas fa-check"></i> Modal opened! ${currentGapsForJIRA.length} tickets ready to create.</span>`;
+            } else {
+                if (statusDiv) statusDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> ERROR: Modal element not found!</span>';
             }
         }
         
