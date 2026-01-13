@@ -47853,14 +47853,16 @@ window.PCIAdapter = {
             const projectKey = document.getElementById('jiraProjectKey').value.trim().toUpperCase();
             const issueType = document.getElementById('jiraIssueType').value;
             
-            // Show confirmation
-            const confirmMsg = `Creating JIRA tickets with:\n\nBase URL: ${baseUrl}\nEmail: ${email}\nProject: ${projectKey}\nIssue Type: ${issueType}\n\nClick OK to proceed or Cancel to abort.`;
-            if (!confirm(confirmMsg)) {
-                return;
-            }
+            // Debug: Show all credentials
+            alert('DEBUG: Starting ticket creation...\n\n' +
+                  'Base URL: ' + baseUrl + '\n' +
+                  'Email: ' + email + '\n' +
+                  'Project: ' + projectKey + '\n' +
+                  'API Token: ' + (apiToken ? 'PRESENT (' + apiToken.length + ' chars)' : 'MISSING!') + '\n\n' +
+                  'Click OK to continue...');
             
             if (!baseUrl || !email || !apiToken || !projectKey) {
-                alert('ERROR: Please fill in all JIRA configuration fields.');
+                alert('ERROR: Missing JIRA credentials!\n\nPlease check:\n1. Base URL\n2. Email\n3. API Token\n4. Project Key');
                 return;
             }
             
